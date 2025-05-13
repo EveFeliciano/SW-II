@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de CEP - ViaCEP</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Consultar CEP</h2>
+        <input type="text" id="cep" placeholder="Digite o CEP (somente números)">
+        <button onclick="buscarCep()">Buscar</button>
+
+        <div class="resultado" id="resultado"></div>
+    </div>
+
+    <script>
+        function buscarCep() {
+            const cep = document.getElementById("cep").value.replace(/\D/g, '');
+            if (cep.length !== 8) {
+                document.getElementById("resultado").innerHTML = "<p style='color:red;'>CEP inválido. Digite 8 números.</p>";
+                return;
+            }
+
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.erro) {
+                        document.getElementById("resultado").innerHTML = "<p style='color:red;'>CEP não encontrado.</p>";
+                    } else {
+                        document.getElementById("resultado").innerHTML = `
+                            <p><strong>Logradouro:</strong> ${data.logradouro}</p>
+                            <p><strong>Bairro:</strong> ${data.bairro}</p>
+                            <p><strong>Localidade:</strong> ${data.localidade}</p>
+                            <p><strong>UF:</strong> ${data.uf}</p>
+                            <p><strong>Estado:</strong> ${obterEstado(data.uf)}</p>
+                            <p><strong>Região:</strong> ${obterRegiao(data.uf)}</p>
+                        `;
+                    }
+                })
+                .catch(() => {
+                    document.getElementById("resultado").innerHTML = "<p style='color:red;'>Erro ao buscar o CEP.</p>";
+                });
+        }
+
+        function obterEstado(uf) {
+            const estados = {
+                AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas", BA: "Bahia", CE: "Ceará",
+                DF: "Distrito Federal", ES: "Espírito Santo", GO: "Goiás", MA: "Maranhão",
+                MT: "Mato Grosso", MS: "Mato Grosso do Sul", MG: "Minas Gerais", PA: "Pará",
+                PB: "Paraíba", PR: "Paraná", PE: "Pernambuco", PI: "Piauí", RJ: "Rio de Janeiro",
+                RN: "Rio Grande do Norte", RS: "Rio Grande do Sul", RO: "Rondônia", RR: "Roraima",
+                SC: "Santa Catarina", SP: "São Paulo", SE: "Sergipe", TO: "Tocantins"
+            };
+            return estados[uf] || "Desconhecido";
+        }
+
+        function obterRegiao(uf) {
+            const regioes = {
+                AC: "Norte", AL: "Nordeste", AP: "Norte", AM: "Norte", BA: "Nordeste", CE: "Nordeste",
+                DF: "Centro-Oeste", ES: "Sudeste", GO: "Centro-Oeste", MA: "Nordeste", MT: "Centro-Oeste",
+                MS: "Centro-Oeste", MG: "Sudeste", PA: "Norte", PB: "Nordeste", PR: "Sul", PE: "Nordeste",
+                PI: "Nordeste", RJ: "Sudeste", RN: "Nordeste", RS: "Sul", RO: "Norte", RR: "Norte",
+                SC: "Sul", SP: "Sudeste", SE: "Nordeste", TO: "Norte"
+            };
+            return regioes[uf] || "Desconhecida";
+        }
+    </script>
+</body>
+</html>
